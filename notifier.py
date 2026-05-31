@@ -6,6 +6,8 @@ import config
 
 logger = logging.getLogger(__name__)
 
+URL = "https://rdeapps.stanford.edu/dininghallmenu/"
+
 def generate_html_email(menu_data: dict, date_str: str) -> str:
     """
     Generates a beautifully styled, premium-looking HTML email body for the menu.
