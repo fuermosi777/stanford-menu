@@ -58,7 +58,7 @@ def main():
     logger.info(f"Successfully parsed {items_count} menu items.")
     
     # 3. Dry-run or Deliver
-    if args.dry-run:
+    if args.dry_run:
         logger.info("--- DRY-RUN MODE: Printing menu details to stdout ---")
         print(f"Header: {menu_data.get('header')}")
         for idx, item in enumerate(menu_data.get("items", [])):
