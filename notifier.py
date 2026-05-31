@@ -152,6 +152,7 @@ def generate_html_email(menu_data: dict, date_str: str) -> str:
 def send_email_notification(menu_data: dict, date_str: str):
     """
     Sends the menu notification via SMTP email based on config settings.
+    Supports single or multiple recipients (separated by commas).
     """
     if not config.SENDER_EMAIL or not config.SENDER_PASSWORD or not config.RECIPIENT_EMAIL:
         logger.warning("Missing email configuration (SENDER_EMAIL, SENDER_PASSWORD, or RECIPIENT_EMAIL). Skipping email delivery.")
@@ -161,6 +162,12 @@ def send_email_notification(menu_data: dict, date_str: str):
         logger.info(f"  RECIPIENT_EMAIL: {'Set' if config.RECIPIENT_EMAIL else 'MISSING'}")
         return False
         
+    # Split recipients by commas and clean spaces
+    recipients = [r.strip() for r in config.RECIPIENT_EMAIL.split(",") if r.strip()]
+    if not recipients:
+        logger.warning("No valid recipient email addresses parsed.")
+        return False
+        
     subject = f"🍽️ Arrillaga Lunch Menu - {date_str}"
     html_content = generate_html_email(menu_data, date_str)
     
@@ -168,7 +175,8 @@ def send_email_notification(menu_data: dict, date_str: str):
     msg = MIMEMultipart("alternative")
     msg["Subject"] = subject
     msg["From"] = config.SENDER_EMAIL
-    msg["To"] = config.RECIPIENT_EMAIL
+    # To header standard expects comma+space separation
+    msg["To"] = ", ".join(recipients)
     
     # Attach HTML body
     msg.attach(MIMEText(html_content, "html"))
@@ -188,8 +196,8 @@ def send_email_notification(menu_data: dict, date_str: str):
         logger.info("SMTP Connection secure. Logging in...")
         server.login(config.SENDER_EMAIL, config.SENDER_PASSWORD)
         
-        logger.info(f"Sending email from {config.SENDER_EMAIL} to {config.RECIPIENT_EMAIL}...")
-        server.sendmail(config.SENDER_EMAIL, config.RECIPIENT_EMAIL, msg.as_string())
+        logger.info(f"Sending email from {config.SENDER_EMAIL} to {len(recipients)} recipients: {', '.join(recipients)}...")
+        server.sendmail(config.SENDER_EMAIL, recipients, msg.as_string())
         
         server.quit()
         logger.info("Email notification sent successfully!")
